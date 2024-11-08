@@ -291,3 +291,120 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 ### **6. Conclusion**
 
 Avec Docker, vous avez maintenant un environnement de développement isolé pour votre projet **FastAPI** avec **MySQL** et **phpMyAdmin**. Vous pouvez facilement gérer et déployer votre application avec Docker en utilisant **docker-compose** pour orchestrer les services.
+
+### BD
+
+Si vous voulez voir et interagir avec votre base de données MySQL sans entrer dans le conteneur Docker, vous pouvez utiliser des outils graphiques comme **phpMyAdmin**, **DBeaver**, ou **MySQL Workbench** pour vous connecter directement à votre base de données MySQL qui fonctionne dans Docker. Voici comment procéder pour configurer et visualiser les données dans Docker de manière plus conviviale.
+
+### 1. **Accéder à la base de données MySQL dans Docker avec phpMyAdmin** :
+
+phpMyAdmin est une interface web populaire qui vous permet d'interagir avec MySQL facilement. Vous pouvez le configurer dans votre `docker-compose.yml` pour accéder à votre base de données via un navigateur.
+
+#### Étapes :
+1. **Ajouter phpMyAdmin à votre fichier `docker-compose.yml`** :
+
+   Dans votre fichier `docker-compose.yml`, ajoutez un service pour phpMyAdmin :
+
+   ```yaml
+   version: '3'
+   services:
+     db:
+       image: mysql:8
+       container_name: db
+       environment:
+         MYSQL_ROOT_PASSWORD: rootpassword
+         MYSQL_DATABASE: cica_db
+       ports:
+         - "3306:3306"
+       volumes:
+         - db_data:/var/lib/mysql
+
+     phpmyadmin:
+       image: phpmyadmin/phpmyadmin
+       container_name: phpmyadmin
+       environment:
+         PMA_HOST: db
+         PMA_PORT: 3306
+       ports:
+         - "8080:80"  # Port pour accéder à phpMyAdmin
+       depends_on:
+         - db
+
+   volumes:
+     db_data:
+   ```
+
+   Dans cet exemple, **phpMyAdmin** sera accessible via `http://localhost:8080` sur votre machine locale.
+
+2. **Redémarrez vos conteneurs Docker** :
+
+   Une fois le fichier modifié, vous devez redémarrer votre application Docker pour appliquer les changements :
+
+   ```bash
+   docker-compose down
+   docker-compose up
+   ```
+
+3. **Accéder à phpMyAdmin** :
+
+   Vous pouvez maintenant ouvrir votre navigateur et accéder à phpMyAdmin à l'adresse `http://localhost:8080`.
+
+   **Identifiants de connexion** :
+   - **Serveur MySQL** : `db` (nom du conteneur de la base de données)
+   - **Utilisateur** : `root`
+   - **Mot de passe** : celui défini dans `MYSQL_ROOT_PASSWORD` (par exemple, `rootpassword`)
+
+4. **Explorer vos bases de données** :
+
+   Une fois connecté, vous pourrez visualiser et interagir avec toutes vos bases de données MySQL directement depuis l'interface web de phpMyAdmin.
+
+---
+
+### **Accéder à la base de données MySQL dans Docker avec DBeaver (outil de gestion de base de données)** :
+
+Si vous préférez un outil desktop plus puissant, vous pouvez utiliser **DBeaver** (disponible sur Windows, macOS et Linux).
+
+#### Étapes :
+1. **Télécharger et installer DBeaver** :
+   - Allez sur [le site de DBeaver](https://dbeaver.io/download/) et téléchargez la version correspondant à votre système d'exploitation.
+   - Installez DBeaver.
+
+2. **Configurer la connexion MySQL** :
+   - Lancez DBeaver et cliquez sur "Database" > "New Database Connection".
+   - Sélectionnez "MySQL" comme type de base de données.
+   - Remplissez les informations de connexion :
+     - **Host** : `localhost` (ou l'adresse IP du conteneur Docker si elle est différente, vous pouvez obtenir cela via `docker inspect db`).
+     - **Port** : `3306` (par défaut pour MySQL).
+     - **Username** : `root` (ou tout autre utilisateur que vous avez configuré).
+     - **Password** : le mot de passe défini dans votre fichier `.env` ou `docker-compose.yml`.
+     - **Database** : Le nom de la base de données, par exemple `cica_db`.
+
+3. **Connecter et explorer** :
+   - Une fois la connexion établie, vous pourrez explorer toutes les bases de données, tables, et exécuter des requêtes SQL directement dans DBeaver.
+
+---
+
+### 3. **Accéder à la base de données MySQL avec MySQL Workbench** :
+
+**MySQL Workbench** est un autre outil graphique très populaire pour interagir avec MySQL.
+
+#### Étapes :
+1. **Télécharger et installer MySQL Workbench** :
+   - Téléchargez et installez **MySQL Workbench** depuis [le site officiel de MySQL](https://dev.mysql.com/downloads/workbench/).
+
+2. **Configurer la connexion MySQL** :
+   - Ouvrez MySQL Workbench et créez une nouvelle connexion en cliquant sur le "+" à côté de "MySQL Connections".
+   - Entrez les détails suivants pour la connexion :
+     - **Hostname** : `localhost` (ou l'adresse IP de votre conteneur MySQL si nécessaire).
+     - **Port** : `3306`.
+     - **Username** : `root`.
+     - **Password** : Le mot de passe root défini dans votre configuration Docker (par exemple `rootpassword`).
+
+3. **Explorer la base de données** :
+   - Une fois la connexion établie, vous pouvez voir vos bases de données, exécuter des requêtes, et interagir avec votre base de données MySQL.
+
+---
+
+### Conclusion :
+
+Utiliser phpMyAdmin ou un outil de gestion comme **DBeaver** ou **MySQL Workbench** vous permettra de visualiser et gérer votre base de données MySQL sans avoir à entrer dans le conteneur Docker. Ces outils offrent des interfaces graphiques conviviales et sont très efficaces pour interagir avec vos données MySQL.
